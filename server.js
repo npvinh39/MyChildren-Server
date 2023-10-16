@@ -13,18 +13,18 @@ const schedulePromotion = require('./middlewares/schedulePromotion');
 schedulePromotion.updatePriceDiscount.start();
 
 // Routes
-app.use('/user', require('./routes/userRouter'));
-app.use('/admin', require('./routes/adminRouter'));
-app.use('/categories', require('./routes/categoriesRouter'));
-app.use('/products', require('./routes/productRouter'));
-app.use('/rated', require('./routes/ratedRouter'));
-app.use('/cart', require('./routes/cartRouter'));
-app.use('/order', require('./routes/orderRouter'));
-app.use('/warehouse', require('./routes/warehouseRouter'));
-app.use('/promotion', require('./routes/promotionRouter'));
-app.use('/contact', require('./routes/contactRouter'));
-app.use('/revenue', require('./routes/revenueRouter'));
-app.use('/address', require('./routes/addressRouter'));
+app.use('/api/user', require('./routes/userRouter'));
+app.use('/api/admin', require('./routes/adminRouter'));
+app.use('/api/categories', require('./routes/categoriesRouter'));
+app.use('/api/products', require('./routes/productRouter'));
+app.use('/api/rated', require('./routes/ratedRouter'));
+app.use('/api/cart', require('./routes/cartRouter'));
+app.use('/api/order', require('./routes/orderRouter'));
+app.use('/api/warehouse', require('./routes/warehouseRouter'));
+app.use('/api/promotion', require('./routes/promotionRouter'));
+app.use('/api/contact', require('./routes/contactRouter'));
+app.use('/api/revenue', require('./routes/revenueRouter'));
+app.use('/api/address', require('./routes/addressRouter'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URL, {
