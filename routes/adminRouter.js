@@ -13,7 +13,7 @@ router.get('/refresh_token', adminCtrl.refreshToken);
 
 router.get('/info', auth, adminCtrl.viewProfile);
 
-router.get('/all_info', auth, authAdmin, adminCtrl.getAllAdmins);
+router.get('/all', auth, authAdmin, adminCtrl.getAllAdmins);
 
 router.patch('/update', auth, authAdmin, adminCtrl.updateProfile);
 
