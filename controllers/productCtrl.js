@@ -18,6 +18,14 @@ const productCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    getProductByCategory: async (req, res) => {
+        try {
+            const products = await Product.find({ category_id: req.params.id });
+            res.json(products);
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
     createProduct: async (req, res) => {
         try {
             const { product_id, name, category_id, stock, price, images, content } = req.body;
