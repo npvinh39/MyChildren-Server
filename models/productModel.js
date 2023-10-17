@@ -19,6 +19,10 @@ const productSchema = new mongoose.Schema({
         required: true,
         default: "Others"
     },
+    featured_product: {
+        type: Boolean,
+        default: false
+    },
     stock: {
         type: Number,
         required: true,
