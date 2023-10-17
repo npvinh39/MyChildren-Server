@@ -9,7 +9,7 @@ router.get('/:id', orderCtrl.getOrder);
 
 router.get('/user/:id', orderCtrl.getOrdersByUser);
 
-router.post('/add/:id', auth, orderCtrl.createOrder);
+router.post('/add/:id', orderCtrl.createOrder);
 
 router.patch('/edit/:id', auth, authAdmin, orderCtrl.updateOrder);
 

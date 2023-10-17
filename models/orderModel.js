@@ -5,6 +5,10 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    code_order: {
+        type: String,
+        required: true
+    },
     products: {
         type: Array,
         required: true
