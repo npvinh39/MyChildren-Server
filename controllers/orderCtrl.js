@@ -32,18 +32,19 @@ const orderCtrl = {
         try {
             // get id cart_id
             const cart_id = req.params.id;
-
-            const { user_id, customer, phone, email, discount, shipping, payment_status, payment_method, status, delivery_method, address } = req.body;
+            let user_id = req.user.id;
+            const { customer, phone, email, shipping, payment_status, payment_method, status, delivery_method, address } = req.body;
 
             // if user is not logged in
             // if (!user_id) return res.status(400).json({ msg: "Please login to continue!" });
 
             // if the user is not logged in then they will place an order with user_id as "visitor"
-            if (!user_id) user_id = "visitor";
             const user = await User.findById(user_id);
+            if (!user) user_id = "visitor";
 
             // check discount membership with spending
-            if (user_id !== "visitor" && !user) {
+            let discount = 0;
+            if (user_id !== "visitor" && user) {
                 if (user.spending >= 1000000) {
                     discount = 0.1;
                 }
