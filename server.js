@@ -33,6 +33,7 @@ app.use('/api/promotion', require('./routes/promotionRouter'));
 app.use('/api/contact', require('./routes/contactRouter'));
 app.use('/api/revenue', require('./routes/revenueRouter'));
 app.use('/api/address', require('./routes/addressRouter'));
+app.use('/api', require('./routes/upload'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URL, {

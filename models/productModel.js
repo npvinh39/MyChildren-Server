@@ -42,10 +42,20 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    images: {
-        type: Array,
-        default: []
-    },
+    images: [
+        {
+            public_id: {
+                type: String,
+                required: true,
+                default: "No image"
+            },
+            url: {
+                type: String,
+                required: true,
+                default: "https://res.cloudinary.com/npvinh/image/upload/v1697730520/MyChildren/sgim0ngzkustrnwu2gq8.png"
+            }
+        }
+    ],
     content: {
         type: String,
         required: true,
