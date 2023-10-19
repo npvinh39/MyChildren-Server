@@ -10,7 +10,7 @@ const schedulePromotion = {
             // const products = await Product.find();
 
             promotions.forEach(async (promotion) => {
-                if (promotion.startDate <= new Date() && promotion.endDate >= new Date()) {
+                if (promotion.startDate >= new Date() && promotion.endDate >= new Date()) {
                     promotion.products.forEach(async (product) => {
                         const productPromotion = await Product.findOne({ _id: product.product_id });
                         productPromotion.price_discount = productPromotion.price * (1 - promotion.discount / 100);
@@ -18,7 +18,7 @@ const schedulePromotion = {
                         await productPromotion.save();
                     });
                 }
-                else if (promotion.endDate < new Date()) {
+                if (promotion.startDate < new Date() && promotion.endDate < new Date()) {
                     promotion.products.forEach(async (product) => {
                         const productPromotion = await Product.findOne({ _id: product.product_id });
                         productPromotion.price_discount = productPromotion.price;
