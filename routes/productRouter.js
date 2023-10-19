@@ -9,6 +9,8 @@ router.get('/:id', productCtrl.getProduct);
 
 router.get('/category/:id', productCtrl.getProductByCategory);
 
+router.get('/description/:id', productCtrl.getDescriptionByProduct);
+
 router.post('/add', auth, authAdmin, productCtrl.createProduct);
 
 router.patch('/edit/:id', auth, authAdmin, productCtrl.updateProduct);

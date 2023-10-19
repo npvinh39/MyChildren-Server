@@ -18,6 +18,15 @@ const productCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    getDescriptionByProduct: async (req, res) => {
+        try {
+            const description = await Description.findOne({ product_id: req.params.id });
+            res.json(description);
+        }
+        catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
     getProductByCategory: async (req, res) => {
         try {
             const products = await Product.find({ category_id: req.params.id });
