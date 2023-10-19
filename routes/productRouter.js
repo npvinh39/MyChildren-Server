@@ -5,6 +5,8 @@ const authAdmin = require('../middlewares/authAdmin');
 
 router.get('/', productCtrl.getProducts);
 
+router.get('/with-description', productCtrl.getProductsWithDescription);
+
 router.get('/:id', productCtrl.getProduct);
 
 router.get('/category/:id', productCtrl.getProductByCategory);

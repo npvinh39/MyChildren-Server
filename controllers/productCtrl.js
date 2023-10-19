@@ -10,10 +10,40 @@ const productCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    getProductsWithDescription: async (req, res) => {
+        try {
+            // Lấy danh sách sản phẩm
+            const products = await Product.find();
+
+            const productsWithDescription = [];
+
+            for (const product of products) {
+                const description = await Description.findOne({ product_id: product._id });
+
+                // Kết hợp thông tin Product và Description
+                const productWithDescription = {
+                    ...product.toObject(),
+                    description: description ? description.toObject() : null
+                };
+
+                productsWithDescription.push(productWithDescription);
+            }
+
+            res.json(productsWithDescription);
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
     getProduct: async (req, res) => {
         try {
             const product = await Product.findById(req.params.id);
-            res.json(product);
+            const description = await Description.findOne({ product_id: req.params.id });
+            const result = {
+                ...product.toObject(),
+                description: description.toObject()
+            };
+
+            res.json(result);
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
