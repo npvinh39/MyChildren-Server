@@ -17,23 +17,32 @@ const scheduleRevenue = {
 
             // Calculate total_price and quantity of yesterday
             // If it doesn't sell that day, total_price and quantity will be 0
-            orders.forEach(order => {
-                if (order.createdAt >= yesterday && order.createdAt < today) {
+            orders.map(order => {
+                if (order.createdAt.getDate() === yesterday.getDate()) {
                     total_price += order.total_price;
                     quantity += order.quantity;
                 }
             });
 
-            const revenue = new Revenue({
-                total_price: total_price,
-                quantity: quantity
-            });
+            // If yesterday's revenue is already exist, update it
+            // If not, create new revenue
+            const revenue = await Revenue.findOne({ date: yesterday });
+            if (revenue) {
+                revenue.total_price = total_price;
+                revenue.quantity = quantity;
 
-            await revenue.save();
+                await revenue.save();
+            } else {
+                const newRevenue = new Revenue({
+                    total_price: total_price,
+                    quantity: quantity
+                });
+                await newRevenue.save();
+            }
         } catch (err) {
             console.log(err);
         }
-    }),
+    })
 }
 
 module.exports = scheduleRevenue;

@@ -208,6 +208,16 @@ const revenueCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+
+    deleteAllRevenue: async (req, res) => {
+        try {
+            await Revenue.deleteMany();
+
+            res.json({ msg: "Deleted all revenue" });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    }
 }
 
 module.exports = revenueCtrl;

@@ -33,5 +33,7 @@ router.put('/:id', auth, authAdmin, revenueCtrl.updateRevenue);
 
 router.delete('/:id', auth, authAdmin, revenueCtrl.deleteRevenue);
 
+router.delete('/', auth, authAdmin, revenueCtrl.deleteAllRevenue);
+
 
 module.exports = router;

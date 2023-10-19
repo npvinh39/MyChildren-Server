@@ -16,9 +16,11 @@ app.use((req, res, next) => {
 
 // import schedule
 const schedulePromotion = require('./middlewares/schedulePromotion');
+const scheduleRevenue = require('./middlewares/scheduleRevenue');
 
 // run schedule
 schedulePromotion.updatePriceDiscount.start();
+scheduleRevenue.updateRevenue.start();
 
 // Routes
 app.use('/api/user', require('./routes/userRouter'));
