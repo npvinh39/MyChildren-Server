@@ -12,5 +12,15 @@
             "src": "/(.*)",
             "dest": "server.js"
         }
+    ],
+    "crons": [
+        {
+            "path": "/middleware/schedulePromotionVercel",
+            "schedule": "*/10 * * * *"
+        },
+        {
+            "path": "/middleware/scheduleRevenueVercel",
+            "schedule": "0 0 * * *"
+        }
     ]
 }
