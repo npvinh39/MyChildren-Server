@@ -1,73 +1,60 @@
 const Product = require('../models/productModel');
 const Description = require('../models/descriptionModel');
+const APIFeatures = require('../utils/apiFeatures');
+
 
 const productCtrl = {
     getProducts: async (req, res) => {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
+            const features = new APIFeatures(Product.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
 
-            const results = {};
+            const products = await features.query;
 
-            if (endIndex < await Product.countDocuments().exec()) {
-                results.next = {
-                    page: page + 1,
-                    limit: limit
+            res.json({
+                status: 'success',
+                results: products.length,
+                totalPages: Math.ceil(await Product.countDocuments().exec() / req.query.limit),
+                data: {
+                    products
                 }
-            }
-
-            if (startIndex > 0) {
-                results.previous = {
-                    page: page - 1,
-                    limit: limit
-                }
-            }
-
-            results.results = await Product.find().limit(limit).skip(startIndex).exec();
-            res.json(results);
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
     },
+
     getProductsWithDescription: async (req, res) => {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 12;
-            const startIndex = (page - 1) * limit;
-            const endIndex = page * limit;
+            const features = new APIFeatures(Product.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
 
-            const results = {};
 
-            if (endIndex < await Product.countDocuments().exec()) {
-                results.next = {
-                    page: page + 1,
-                    limit: limit
-                }
-            }
+            const products = await features.query;
 
-            if (startIndex > 0) {
-                results.previous = {
-                    page: page - 1,
-                    limit: limit
-                }
-            }
-
-            const products = await Product.find().limit(limit).skip(startIndex).exec();
-            const descriptions = await Description.find().limit(limit).skip(startIndex).exec();
-
-            const result = products.map((product, index) => {
+            const result = await Promise.all(products.map(async product => {
+                const description = await Description.findOne({ product_id: product._id });
                 return {
                     ...product.toObject(),
-                    description: descriptions[index].toObject()
+                    description: description.toObject()
+                };
+            })
+            );
+
+            res.json({
+                status: 'success',
+                results: result.length,
+                totalPages: Math.ceil(await Product.countDocuments().exec() / req.query.limit),
+                data: {
+                    products: result
                 }
             });
-
-            results.totalPages = Math.ceil(await Product.countDocuments().exec() / limit);
-
-            results.results = result;
-            res.json(results);
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

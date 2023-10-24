@@ -1,11 +1,26 @@
 const Category = require('../models/categoriesModel');
 const Product = require('../models/productModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 const categoryCtrl = {
     getCategories: async (req, res) => {
         try {
-            const categories = await Category.find();
-            res.json(categories);
+            const features = new APIFeatures(Category.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+
+            const categories = await features.query;
+
+            res.json({
+                status: 'success',
+                results: categories.length,
+                totalPages: Math.ceil(await Category.countDocuments().exec() / req.query.limit),
+                data: {
+                    categories
+                }
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
