@@ -10,6 +10,14 @@ const categoryCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    getCategory: async (req, res) => {
+        try {
+            const category = await Category.findById(req.params.id);
+            res.json(category);
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
     createCategory: async (req, res) => {
         try {
             // only admin can create , delete and update category

@@ -57,6 +57,10 @@ router.post('/destroy', auth, authAdmin, async (req, res) => {
     }
 });
 
+router.post('/success', async (req, res) => {
+    res.json({ success: true });
+});
+
 const removeTmp = (path) => {
     return new Promise((resolve, reject) => {
         fs.unlink(path, err => {

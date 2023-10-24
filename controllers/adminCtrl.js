@@ -185,7 +185,7 @@ const adminCtrl = {
 };
 
 const createAccessToken = (user) => {
-    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET_KEY, { expiresIn: '30m' });
+    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET_KEY, { expiresIn: '3h' });
 }
 
 const createRefreshToken = (user) => {
