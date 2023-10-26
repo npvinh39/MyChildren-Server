@@ -17,6 +17,10 @@ const schedulePromotion = {
 
                         await productPromotion.save();
                     });
+
+                    // change status promotion to 1
+                    promotion.status = 1;
+                    await promotion.save();
                 }
                 if (promotion.startDate < new Date() && promotion.endDate < new Date()) {
                     promotion.products.forEach(async (product) => {
@@ -25,6 +29,10 @@ const schedulePromotion = {
 
                         await productPromotion.save();
                     });
+
+                    // change status promotion to 2
+                    promotion.status = 2;
+                    await promotion.save();
                 }
             });
         } catch (err) {

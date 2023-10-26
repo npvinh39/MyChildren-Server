@@ -1,4 +1,5 @@
 const Admin = require('../models/adminModel');
+const APIFeatures = require('../utils/apiFeatures');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -121,8 +122,64 @@ const adminCtrl = {
 
     getAllAdmins: async (req, res) => {
         try {
-            const admins = await Admin.find().select('-password');
-            res.json({ admins });
+            const features = new APIFeatures(Admin.find().select('-password'), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+
+            const admins = await features.query;
+            res.json({
+                status: 'success',
+                result: admins.length,
+                totalPages: Math.ceil(await Admin.countDocuments().exec() / req.query.limit),
+                admins: admins
+            });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    getAdmin: async (req, res) => {
+        try {
+            const admin = await Admin.findById(req.params.id).select('-password');
+            if (!admin) return res.status(404).json({ msg: "Admin does not exist." });
+            res.json(admin);
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    updateAdmin: async (req, res) => {
+        try {
+            const { last_name, first_name, email, phone } = req.body;
+
+            // Check if admin exists
+            const admin = await Admin.findById(req.params.id);
+            if (!admin) return res.status(404).json({ msg: "Admin does not exist." });
+
+            // Check if email already exists
+            const emailExist = await Admin.findOne({ email });
+            if (emailExist && email !== admin.email)
+                return res.status(401).json({ msg: "The email already exists." });
+
+            // Update admin's information
+            await Admin.findByIdAndUpdate(req.user.id, {
+                last_name, first_name, email, phone
+            });
+
+            // Return success message
+            res.json({ msg: "Update Success!" });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    deleteAdmin: async (req, res) => {
+        try {
+            const admin = await Admin.findByIdAndDelete(req.params.id);
+            if (!admin) return res.status(404).json({ msg: "Admin does not exist." });
+            res.json({ msg: "Deleted Success!" });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

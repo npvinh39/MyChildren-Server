@@ -5,6 +5,8 @@ const authAdmin = require('../middlewares/authAdmin');
 
 router.get('/', categoriesCtrl.getCategories);
 
+router.get('/all', categoriesCtrl.getAllCategories);
+
 router.get('/:id', categoriesCtrl.getCategory);
 
 router.post('/add', auth, authAdmin, categoriesCtrl.createCategory);

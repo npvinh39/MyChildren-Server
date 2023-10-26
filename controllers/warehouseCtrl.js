@@ -1,16 +1,27 @@
 // Warehouse use to update stock of a product and save it to database
 const Warehouse = require('../models/warehouseModel');
 const Product = require('../models/productModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 const warehouseCtrl = {
     getWarehouseEntries: async (req, res) => {
         try {
-            const warehouseEntries = await Warehouse.find();
+            const features = new APIFeatures(Warehouse.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
 
-            res.json(warehouseEntries);
+            const warehouseEntries = await features.query;
+
+            res.json({
+                status: 'success',
+                result: warehouseEntries.length,
+                totalPages: Math.ceil(await Warehouse.countDocuments().exec() / req.query.limit),
+                warehouse: warehouseEntries
+            });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Server error' });
+            return res.status(500).json({ error: error.message });
         }
     },
 

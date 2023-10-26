@@ -1,13 +1,25 @@
 const Revenue = require('../models/revenueModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 const revenueCtrl = {
     getRevenue: async (req, res) => {
         try {
-            const revenues = await Revenue.find();
+            const features = new APIFeatures(Revenue.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
 
-            res.json(revenues);
-        } catch (err) {
-            return res.status(500).json({ msg: err.message });
+            const revenues = await features.query;
+
+            res.json({
+                status: 'success',
+                result: revenues.length,
+                totalPages: Math.ceil(await Revenue.countDocuments().exec() / req.query.limit),
+                revenue: revenues
+            });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
         }
     },
     getRevenueByDate: async (req, res) => {

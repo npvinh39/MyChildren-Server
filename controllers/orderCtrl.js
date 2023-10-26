@@ -2,12 +2,24 @@ const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 const User = require('../models/userModel');
 const Cart = require('../models/cartModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 const orderCtrl = {
     getOrders: async (req, res) => {
         try {
-            const orders = await Order.find();
-            res.json(orders);
+            const features = new APIFeatures(Order.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+            const orders = await features.query;
+
+            res.json({
+                status: 'success',
+                result: orders.length,
+                totalPages: Math.ceil(await Order.countDocuments().exec() / req.query.limit),
+                orders: orders
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

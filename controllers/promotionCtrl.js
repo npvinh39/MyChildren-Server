@@ -1,12 +1,26 @@
 const Promotion = require('../models/promotionModel');
 const Product = require('../models/productModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 const promotionCtrl = {
     getPromotions: async (req, res) => {
         try {
-            const promotions = await Promotion.find();
-            const time = new Date();
-            res.json({ time, promotions });
+            const features = new APIFeatures(Promotion.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+
+            const promotions = await features.query;
+
+            res.json({
+                status: 'success',
+                results: promotions.length,
+                totalPages: Math.ceil(await Promotion.countDocuments().exec() / req.query.limit),
+                data: {
+                    promotions
+                }
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -48,11 +62,13 @@ const promotionCtrl = {
             // Check if startDate is later than current date, not update product promotion price_discount
             if (startDate > new Date()) return res.status(400).json({ msg: "Start date must be later than current date." });
 
+            const status = startDate <= new Date() ? 1 : 0;
             // Create new promotion
             const newPromotion = new Promotion({
                 name,
                 description,
                 discount,
+                status,
                 products,
                 startDate,
                 endDate
@@ -71,7 +87,7 @@ const promotionCtrl = {
                 });
             }
 
-            res.json({ msg: "Created a promotion." });
+            res.json({ msg: "Created a promotion.", data: newPromotion });
         } catch (err) {
             return res.status(500).json({ msgErr: err.message });
         }
@@ -83,15 +99,16 @@ const promotionCtrl = {
             // Check if promotion name already exists
             const promotion = await Promotion.findOne({ name });
             if (promotion && promotion._id != req.params.id) return res.status(400).json({ msg: "This promotion name already exists." });
-
             // Check if products exists
-            for (let i = 0; i < products.length; i++) {
-                const product = await Product.findById(products[i].product_id);
-                if (!product) return res.status(400).json({ msg: "This product does not exist." });
+            if (products) {
+                for (let i = 0; i < products.length; i++) {
+                    const product = await Product.findById(products[i].product_id);
+                    if (!product) return res.status(400).json({ msg: "This product does not exist." });
 
-                // Check if product is already in promotion
-                const productPromotion = await Promotion.findOne({ products: { $elemMatch: { product_id: products[i].product_id } } });
-                if (productPromotion && productPromotion._id != req.params.id) return res.status(400).json({ msg: "This product is already in promotion." });
+                    // Check if product is already in promotion
+                    const productPromotion = await Promotion.findOne({ products: { $elemMatch: { product_id: products[i].product_id } } });
+                    if (productPromotion && productPromotion._id != req.params.id) return res.status(400).json({ msg: "This product is already in promotion." });
+                }
             }
             // Check if discount is valid
             if (discount < 0 || discount > 100) return res.status(400).json({ msg: "Discount must be between 0 and 100." });
@@ -124,7 +141,10 @@ const promotionCtrl = {
                 }
             }
 
-            res.json({ msg: "Updated a promotion." });
+            // get promotion after update
+            const promotionAfterUpdate = await Promotion.findById(req.params.id);
+
+            res.json({ msg: "Updated a promotion.", data: promotionAfterUpdate });
 
         } catch (err) {
             return res.status(500).json({ msgErr: err.message });

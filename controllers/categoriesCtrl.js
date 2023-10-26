@@ -25,6 +25,16 @@ const categoryCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+
+    getAllCategories: async (req, res) => {
+        try {
+            const categories = await Category.find();
+            res.json({ categories });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
     getCategory: async (req, res) => {
         try {
             const category = await Category.findById(req.params.id);
@@ -43,7 +53,7 @@ const categoryCtrl = {
             const newCategory = new Category({ name, image, description });
 
             await newCategory.save();
-            res.json({ msg: "Created a category" });
+            res.json({ msg: "Created a category", data: newCategory });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -72,7 +82,9 @@ const categoryCtrl = {
             const category = await Category.findOneAndUpdate({ _id: req.params.id }, { name, image, description });
             if (!category) return res.status(404).json({ msg: "Category does not exists" });
 
-            res.json({ msg: "Updated a category" });
+            const result = await Category.findById(req.params.id);
+
+            res.json({ msg: "Updated a category", data: result });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

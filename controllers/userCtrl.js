@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const Cart = require('../models/cartModel');
+const APIFeatures = require('../utils/apiFeatures');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -121,9 +122,51 @@ const userCtrl = {
 
     getAllUsers: async (req, res) => {
         try {
-            const users = await User.find().select({ '-password': 0 });
-            if (!users) return res.status(404).json({ msg: "No user found." });
-            res.json({ users });
+            const features = new APIFeatures(User.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+
+            const users = await features.query;
+
+            res.json({
+                status: 'success',
+                result: users.length,
+                totalPages: Math.ceil(await User.countDocuments().exec() / req.query.limit),
+                users: users
+            });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    getUser: async (req, res) => {
+        try {
+            const user = await User.findById(req.params.id);
+            res.json(user);
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    updateUser: async (req, res) => {
+        try {
+            const { last_name, first_name, email, phone } = req.body;
+            await User.findByIdAndUpdate(req.params.id, { last_name, first_name, email, phone });
+            res.json({ msg: "User successfully updated!", user: req.body });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    deleteUser: async (req, res) => {
+        try {
+            await User.findByIdAndDelete(req.params.id);
+
+            await Cart.findOneAndDelete({ user_id: req.params.id });
+
+            res.json({ msg: "User successfully deleted!", id: req.params.id });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

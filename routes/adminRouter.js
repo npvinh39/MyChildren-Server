@@ -15,6 +15,12 @@ router.get('/info', auth, adminCtrl.viewProfile);
 
 router.get('/all', auth, authAdmin, adminCtrl.getAllAdmins);
 
+router.get('/:id', auth, authAdmin, adminCtrl.getAdmin);
+
+router.patch('/edit/:id', auth, authAdmin, adminCtrl.updateAdmin);
+
+router.delete('/delete/:id', auth, authAdmin, adminCtrl.deleteAdmin);
+
 router.patch('/update', auth, authAdmin, adminCtrl.updateProfile);
 
 router.patch('/change_password', auth, authAdmin, adminCtrl.changePassword);

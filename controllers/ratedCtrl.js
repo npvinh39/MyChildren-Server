@@ -1,12 +1,25 @@
 const Rated = require('../models/ratedModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 const ratedCtrl = {
     getRateds: async (req, res) => {
         try {
-            const rateds = await Rated.find();
-            res.json(rateds);
-        } catch (err) {
-            return res.status(500).json({ msg: err.message });
+            const features = new APIFeatures(Rated.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+
+            const rateds = await features.query;
+
+            res.json({
+                status: 'success',
+                result: rateds.length,
+                totalPages: Math.ceil(await Rated.countDocuments().exec() / req.query.limit),
+                rated: rateds
+            });
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
         }
     },
     getRated: async (req, res) => {
