@@ -30,7 +30,7 @@ app.use('/api/products', require('./routes/productRouter'));
 app.use('/api/rated', require('./routes/ratedRouter'));
 app.use('/api/cart', require('./routes/cartRouter'));
 app.use('/api/order', require('./routes/orderRouter'));
-app.use('/api/warehouse', require('./routes/warehouseRouter'));
+app.use('/api/warehouses', require('./routes/warehouseRouter'));
 app.use('/api/promotion', require('./routes/promotionRouter'));
 app.use('/api/contact', require('./routes/contactRouter'));
 app.use('/api/revenue', require('./routes/revenueRouter'));

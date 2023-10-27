@@ -18,7 +18,7 @@ const warehouseCtrl = {
                 status: 'success',
                 result: warehouseEntries.length,
                 totalPages: Math.ceil(await Warehouse.countDocuments().exec() / req.query.limit),
-                warehouse: warehouseEntries
+                warehouses: warehouseEntries
             });
         } catch (error) {
             return res.status(500).json({ error: error.message });

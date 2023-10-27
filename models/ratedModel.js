@@ -5,6 +5,11 @@ const ratedSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    status: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     rating: {
         type: Number,
         required: true

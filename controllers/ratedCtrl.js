@@ -64,18 +64,19 @@ const ratedCtrl = {
     },
     updateRated: async (req, res) => {
         try {
-            const { product_id, rating, comment, user_id } = req.body;
+            const { product_id, status, rating, comment, user_id } = req.body;
 
             // Update rated
             const rated = await Rated.findOneAndUpdate({ _id: req.params.id }, {
-                product_id, rating, comment, user_id
-            });
+                product_id, status, rating, comment, user_id
+            }, { new: true });
 
             // check rated
             if (!rated) return res.status(400).json({ msg: "This rated does not exist." });
 
             // Return success message
-            res.json({ msg: "Updated rated Successfully!" });
+            const result = await Rated.findById(req.params.id);
+            res.json({ msg: "Updated rated Successfully!", data: result });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
