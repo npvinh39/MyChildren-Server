@@ -32,7 +32,7 @@ app.use('/api/cart', require('./routes/cartRouter'));
 app.use('/api/order', require('./routes/orderRouter'));
 app.use('/api/warehouses', require('./routes/warehouseRouter'));
 app.use('/api/promotion', require('./routes/promotionRouter'));
-app.use('/api/contact', require('./routes/contactRouter'));
+app.use('/api/contacts', require('./routes/contactRouter'));
 app.use('/api/revenue', require('./routes/revenueRouter'));
 app.use('/api/address', require('./routes/addressRouter'));
 app.use('/api', require('./routes/upload'));

@@ -55,7 +55,7 @@ const warehouseCtrl = {
             await warehouseEntry.save();
 
             // Return the updated product
-            res.json({ msg: "Updated warehouse successfully", products });
+            res.json({ msg: "Updated warehouse successfully", warehouseEntry });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Server error' });
@@ -94,7 +94,7 @@ const warehouseCtrl = {
             await warehouseEntry.save();
 
             // Return the updated product
-            res.json({ msg: "Updated warehouse successfully", products });
+            res.json({ msg: "Updated warehouse successfully", warehouseEntry });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Server error' });

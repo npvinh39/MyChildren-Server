@@ -1,10 +1,23 @@
 const Contact = require("../models/contactModel");
+const APIFeatures = require("../utils/apiFeatures");
 
 const contactCtrl = {
     getContacts: async (req, res) => {
         try {
-            const contacts = await Contact.find();
-            res.json(contacts);
+            const features = new APIFeatures(Contact.find(), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+
+            const contacts = await features.query;
+
+            res.json({
+                status: "success",
+                result: contacts.length,
+                totalPages: Math.ceil(await Contact.countDocuments().exec() / req.query.limit),
+                contacts: contacts,
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -19,9 +32,10 @@ const contactCtrl = {
     },
     createContact: async (req, res) => {
         try {
-            const { email, phone, title, content } = req.body;
+            const { name, email, phone, title, content } = req.body;
 
             const newContact = new Contact({
+                name,
                 email,
                 phone,
                 title,
@@ -45,7 +59,9 @@ const contactCtrl = {
                 }
             );
 
-            res.json({ msg: "Updated a contact" });
+            const contact = await Contact.findById(req.params.id);
+
+            res.json({ msg: "Updated a contact", contact });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
