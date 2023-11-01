@@ -84,8 +84,42 @@ const productCtrl = {
     },
     getProductByCategory: async (req, res) => {
         try {
-            const products = await Product.find({ category_id: req.params.id });
-            res.json(products);
+
+            if (req.params.id === 'all') {
+                const features = new APIFeatures(Product.find(), req.query)
+                    .filter()
+                    .sort()
+                    .limitFields()
+                    .paginate();
+
+
+                const products = await features.query;
+
+                res.json({
+                    status: 'success',
+                    results: products.length,
+                    totalPages: Math.ceil(await Product.countDocuments().exec() / req.query.limit),
+                    products
+                });
+            }
+            else {
+                const features = new APIFeatures(Product.find({ category_id: req.params.id }), req.query)
+                    .filter()
+                    .sort()
+                    .limitFields()
+                    .paginate();
+
+
+                const products = await features.query;
+
+                res.json({
+                    status: 'success',
+                    results: products.length,
+                    totalPages: Math.ceil(await Product.countDocuments().exec() / req.query.limit),
+                    products
+                });
+            }
+
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
