@@ -18,7 +18,7 @@ const adminCtrl = {
 
             // Check if new password meets additional criteria
             const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\S+$).{8,}$/;
-            if (!passwordRegex.test(newPassword))
+            if (!passwordRegex.test(password))
                 return res.status(401).json({ msg: "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character." });
 
             // Encrypt password

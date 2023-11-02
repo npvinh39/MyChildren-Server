@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const Cart = require('../models/cartModel');
+const Address = require('../models/addressModel');
 const APIFeatures = require('../utils/apiFeatures');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -11,11 +12,16 @@ const userCtrl = {
 
             // Check if user already exists
             const user = await User.findOne({ email });
-            if (user) return res.status(401).json({ msg: "The email already exists." });
+            if (user) return res.status(401).json({ msg: "Email này đã được sử dụng" });
 
             // Check if password is at least 6 characters long
-            if (password.length < 6)
-                return res.status(401).json({ msg: "Password is at least 6 characters long." });
+            // if (password.length < 6)
+            //     return res.status(401).json({ msg: "Mật khẩu dài ít nhất 6 ký tự" });
+
+            // Check if new password meets additional criteria
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/;
+            if (!passwordRegex.test(password))
+                return res.status(401).json({ msg: "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character." });
 
             // Encrypt password
             const passwordHash = await bcrypt.hash(password, 10);
@@ -49,7 +55,7 @@ const userCtrl = {
             });
 
             // Return access token and new user's information
-            res.json({ accessToken, newUser });
+            res.json({ accessToken, refreshToken, newUser });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -62,11 +68,11 @@ const userCtrl = {
 
             // Check if user exists
             const user = await User.findOne({ email });
-            if (!user) return res.status(404).json({ msg: "User does not exist." });
+            if (!user) return res.status(404).json({ msg: "Người dùng không tồn tại" });
 
             // Check if password is correct
             const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) return res.status(401).json({ msg: "Incorrect password." });
+            if (!isMatch) return res.status(401).json({ msg: "Mật khẩu không đúng" });
 
             // Create access token and refresh token
             const accessToken = createAccessToken({ id: user._id });
@@ -85,7 +91,7 @@ const userCtrl = {
         try {
             // Clear refresh token cookie
             res.clearCookie('refreshToken', { path: '/' });
-            return res.json({ msg: "Logged out" });
+            return res.json({ msg: "Đăng xuất thành công" });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -93,10 +99,18 @@ const userCtrl = {
 
     viewProfile: async (req, res) => {
         try {
-            const { email } = req.body;
-            const user = await User.findOne({ email }).select({ '-password': 0, '-_id': 0 });
-            if (!user) return res.status(404).json({ msg: "User does not exist." });
-            res.json({ user });
+            //view profile with access token
+            const id = req.user.id;
+            const user = await User.findById(id);
+            // -password
+            const { password, ...info } = user._doc;
+            // get cart information
+            const cart = await Cart.findOne({ user_id: id });
+            // get address array information from address_id array
+            const address = await Address.find({ _id: { $in: info.address_id } });
+
+            res.json({ ...info, cart, address });
+
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
