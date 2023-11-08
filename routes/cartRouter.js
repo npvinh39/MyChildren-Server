@@ -6,9 +6,9 @@ const authAdmin = require('../middlewares/authAdmin');
 
 router.get('/:user_id', auth, cartCtrl.getCart);
 
-router.post('/add/:user_id', auth, cartCtrl.addToCart);
+router.post('/add', auth, cartCtrl.addToCart);
 
-router.patch('/edit', auth, cartCtrl.updateCart);
+router.patch('/update', auth, cartCtrl.updateCart);
 
 // delete the product from cart
 router.patch('/delete/:id', auth, cartCtrl.deleteProduct);

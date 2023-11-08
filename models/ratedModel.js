@@ -18,6 +18,13 @@ const ratedSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 50,
+        default: 'Anonymous'
+    },
     user_id: {
         type: String,
         required: true

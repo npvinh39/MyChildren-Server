@@ -9,6 +9,10 @@ router.get('/:id', ratedCtrl.getRated);
 
 router.get('/product/:id', ratedCtrl.getRatedByProduct);
 
+router.get('/total-rating/:id', ratedCtrl.getTotalRatingByProduct);
+
+router.get('/user/:id', ratedCtrl.getRatedByUser);
+
 router.post('/add', auth, ratedCtrl.createRated);
 
 router.patch('/edit/:id', auth, authAdmin, ratedCtrl.updateRated);
