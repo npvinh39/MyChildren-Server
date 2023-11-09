@@ -12,64 +12,52 @@ const cartCtrl = {
     },
     addToCart: async (req, res) => {
         try {
-            const { product_id, quantity } = req.body;
+            const { products } = req.body;
 
-            // if user is not logged in
+            // If the user is not logged in
             if (!req.user.id) return res.status(400).json({ msg: "Please login to continue!" });
 
-            // get cart
-            const cart = await Cart.findOne({ user_id: req.user.id });
+            // Get the user's cart
+            let cart = await Cart.findOne({ user_id: req.user.id });
 
-            // if cart is not found
+            // If the cart is not found, create a new one
             if (!cart) {
-                // create new cart
                 const newCart = new Cart({
                     user_id: req.user.id,
-                    products: [{
-                        product_id: product_id,
-                        quantity: quantity
-                    }],
+                    products: [],
                     total_price: 0
                 });
-
-                // save cart
                 await newCart.save();
-
-                // return response
-                return res.json({ msg: "Added to cart!" });
+                cart = newCart;
             }
 
-            // if cart is found
-            // check if product is already in cart
-            const product = cart.products.find(product => product.product_id === product_id);
+            for (const productInfo of products) {
+                const { product_id, quantity } = productInfo;
+                const product = cart.products.find(p => p.product_id === product_id);
 
-            // if product is already in cart
-            if (product) {
-                // update quantity
-                product.quantity += quantity;
-            }
-            else {
-                // add new product
-                cart.products.push({
-                    product_id: product_id,
-                    quantity: quantity
-                });
+                if (product) {
+                    // Update the number of products currently in the cart
+                    product.quantity += quantity;
+                } else {
+                    // Add a new product to the cart
+                    cart.products.push({
+                        product_id,
+                        quantity
+                    });
+                }
             }
 
-            // update total price
+            // Calculate the total price
             cart.total_price = 0;
-
-            for (let i = 0; i < cart.products.length; i++) {
-
-                const product = await Product.findById(cart.products[i].product_id);
-                cart.total_price += product.price_discount * cart.products[i].quantity;
+            for (const cartProduct of cart.products) {
+                const product = await Product.findById(cartProduct.product_id);
+                cart.total_price += product.price_discount * cartProduct.quantity;
             }
 
-            // save cart
+            // Save the updated cart
             await cart.save();
 
-            // return response
-            return res.json({ msg: "Added to cart!", cart: cart });
+            return res.json({ msg: "Updated cart!", cart });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -100,8 +88,8 @@ const cartCtrl = {
                 const product = cart.products.find(p => p.product_id === product_id);
 
                 if (product) {
-                    // Update the quantity of an existing product in the cart
-                    product.quantity += quantity;
+                    // Update the number of products currently in the cart by getting the received quantity
+                    product.quantity = quantity;
                 } else {
                     // Add a new product to the cart
                     cart.products.push({
@@ -123,6 +111,7 @@ const cartCtrl = {
 
             return res.json({ msg: "Updated cart!", cart });
         } catch (err) {
+            return res.status(500).json({ msg: err.message });
         }
     },
 
@@ -171,7 +160,7 @@ const cartCtrl = {
             await cart.save();
 
             // return response
-            return res.json({ msg: "Deleted product!" });
+            return res.json({ msg: "Deleted product!", cart });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
