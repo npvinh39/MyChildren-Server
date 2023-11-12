@@ -120,14 +120,14 @@ const cartCtrl = {
             const product_id = req.params.id;
 
             // if user is not logged in
-            if (!req.user.id) return res.status(400).json({ msg: "Please login to continue!" });
+            if (!req.user.id) return res.status(401).json({ msg: "Please login to continue!" });
 
             // get cart
             const cart = await Cart.findOne({ user_id: req.user.id });
 
             // if cart is not found
             if (!cart) {
-                return res.status(400).json({ msg: "Cart not found!" });
+                return res.status(401).json({ msg: "Cart not found!" });
             }
 
             // if cart is found
@@ -136,7 +136,7 @@ const cartCtrl = {
 
             // if product is not found
             if (!product) {
-                return res.status(400).json({ msg: "Product not found!" });
+                return res.status(401).json({ msg: "Product not found!" });
             }
 
             // if product is found

@@ -48,7 +48,7 @@ const orderCtrl = {
             const { user_id, code_order, customer, phone, email, shipping, payment_status, payment_method, status, delivery_method, address } = req.body;
 
             // if user is not logged in
-            // if (!user_id) return res.status(400).json({ msg: "Please login to continue!" });
+            if (!user_id) return res.status(401).json({ msg: "Please login to continue!" });
 
             // if the user is not logged in then they will place an order with user_id as "visitor"
             const user = await User.findById(user_id);
