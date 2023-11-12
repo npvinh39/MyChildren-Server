@@ -45,7 +45,9 @@ const orderCtrl = {
             // get id cart_id
             const cart_id = req.params.id;
 
-            const { user_id, code_order, customer, phone, email, shipping, payment_status, payment_method, status, delivery_method, address } = req.body;
+            const user_id = req.user.id;
+
+            const { code_order, customer, phone, email, shipping, payment_status, payment_method, delivery_method, address } = req.body;
 
             // if user is not logged in
             if (!user_id) return res.status(401).json({ msg: "Please login to continue!" });
@@ -79,7 +81,7 @@ const orderCtrl = {
             let total_amount = 0;
             for (let i = 0; i < products.length; i++) {
                 const product = await Product.findById(products[i].product_id);
-                total_amount += product.price * products[i].quantity;
+                total_amount += product.price_discount * products[i].quantity;
             }
 
             // calculate final total
@@ -87,7 +89,7 @@ const orderCtrl = {
 
             // add the order
             const newOrder = new Order({
-                user_id, code_order, products: products, customer, phone, email, discount, shipping, total_amount, final_total, payment_status, payment_method, status, delivery_method, address
+                user_id, code_order, products: products, customer, phone, email, discount, shipping, total_amount, final_total, payment_status, payment_method, delivery_method, address
             });
 
             // Save order to database
