@@ -118,17 +118,26 @@ const userCtrl = {
 
     updateProfile: async (req, res) => {
         try {
+            const id = req.user.id;
             const { email, last_name, first_name, phone } = req.body;
 
             // Check if user exists
-            const user = await User.findOne({ email });
+            const user = await User.findById(id);
             if (!user) return res.status(404).json({ msg: "User does not exist." });
 
             // Update user's profile
-            await User.findByIdAndUpdate(user._id, { last_name, first_name, phone });
+            await User.findByIdAndUpdate(user._id, { email, last_name, first_name, phone });
+
+            const updatedUser = await User.findById(user._id);
+            // -password
+            const { password, ...info } = updatedUser._doc;
+            // get cart information
+            const cart = await Cart.findOne({ user_id: id });
+            // get address array information from address_id array
+            const address = await Address.find({ _id: { $in: info.address_id } });
 
             // Return message indicating that the profile has been updated
-            res.json({ msg: "Profile successfully updated!" });
+            res.json({ msg: "Profile successfully updated!", data: { ...info, cart, address } });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -205,17 +214,23 @@ const userCtrl = {
 
     changePassword: async (req, res) => {
         try {
-            const { email, password, newPassword } = req.body;
-            const user = await User.findOne({ email });
+            const id = req.user.id;
+            const { password, newPassword } = req.body;
+            const user = await User.findById(id);
             if (!user) return res.status(404).json({ msg: "User does not exist." });
 
             // Check if old password is correct
             const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) return res.status(401).json({ msg: "Incorrect password." });
+            if (!isMatch) return res.status(401).json({ msg: "Mật khẩu hiện tại không đúng" });
 
-            // Check if new password is at least 6 characters long
-            if (newPassword.length < 6)
-                return res.status(401).json({ msg: "Password is at least 6 characters long." });
+            // Check if new password is at least 8 characters long
+            if (newPassword.length < 8)
+                return res.status(401).json({ msg: "Password is at least 8 characters long." });
+
+            // Check if new password meets additional criteria
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/;
+            if (!passwordRegex.test(newPassword))
+                return res.status(401).json({ msg: "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character." });
 
             // Encrypt new password and update user's password
             const passwordHash = await bcrypt.hash(newPassword, 10);

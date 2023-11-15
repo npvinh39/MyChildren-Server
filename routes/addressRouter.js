@@ -11,6 +11,10 @@ router.route('/:id')
     .put(auth, addressCtrl.updateAddress)
     .delete(auth, addressCtrl.deleteAddress);
 
+// updateDefaultAddress
+router.route('/default')
+    .patch(auth, addressCtrl.updateDefaultAddress);
+
 router.route('/user')
     .get(auth, addressCtrl.getAddressByUserId);
 

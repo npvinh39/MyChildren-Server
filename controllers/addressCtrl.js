@@ -57,6 +57,31 @@ const addressCtrl = {
         }
     },
 
+    // update array of address_id in user, set address_id in 0 index array
+    updateDefaultAddress: async (req, res) => {
+        try {
+            const user = await User.findById(req.user.id).select('-password');
+            const { address_id } = req.body;
+
+            if (!address_id)
+                return res.status(401).json({ msg: "Please select an address." });
+
+            if (!user.address_id.includes(address_id))
+                return res.status(401).json({ msg: "This address does not belong to the user." });
+
+            const index = user.address_id.indexOf(address_id);
+
+            user.address_id.splice(index, 1);
+            user.address_id.unshift(address_id);
+
+            await user.save();
+
+            res.json({ msg: "Updated default address." });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
     updateAddress: async (req, res) => {
         try {
             const { province, district, ward, number_street } = req.body;
