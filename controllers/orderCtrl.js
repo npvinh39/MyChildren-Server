@@ -34,8 +34,19 @@ const orderCtrl = {
     },
     getOrdersByUser: async (req, res) => {
         try {
-            const orders = await Order.find({ user_id: req.params.id });
-            res.json(orders);
+            const features = new APIFeatures(Order.find({ user_id: req.params.id }), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+            const orders = await features.query;
+
+            res.json({
+                status: 'success',
+                result: orders.length,
+                totalPages: Math.ceil(await Order.countDocuments().exec() / req.query.limit),
+                orders: orders
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

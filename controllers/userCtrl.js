@@ -108,6 +108,10 @@ const userCtrl = {
             const cart = await Cart.findOne({ user_id: id });
             // get address array information from address_id array
             const address = await Address.find({ _id: { $in: info.address_id } });
+            // sort addresses by adress_id array in user (default address is in 0 index array)
+            address.sort((a, b) => {
+                return info.address_id.indexOf(a._id) - info.address_id.indexOf(b._id);
+            });
 
             res.json({ ...info, cart, address });
 

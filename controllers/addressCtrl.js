@@ -27,6 +27,11 @@ const addressCtrl = {
             const user = await User.findById(req.user.id).select('-password');
             const addresses = await Address.find({ _id: { $in: user.address_id } });
 
+            // sort addresses by adress_id array in user (default address is in 0 index array)
+            addresses.sort((a, b) => {
+                return user.address_id.indexOf(a._id) - user.address_id.indexOf(b._id);
+            });
+
             res.json(addresses);
         } catch (err) {
             return res.status(500).json({ msg: err.message });
@@ -51,7 +56,7 @@ const addressCtrl = {
 
             await newAddress.save();
 
-            res.json({ msg: "Created a new address." });
+            res.json({ msg: "Created a new address.", data: newAddress });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -93,7 +98,9 @@ const addressCtrl = {
                 province, district, ward, number_street
             });
 
-            res.json({ msg: "Updated an address." });
+            const address = await Address.findById(req.params.id);
+
+            res.json({ msg: "Updated an address.", data: address });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

@@ -3,19 +3,19 @@ const addressCtrl = require('../controllers/addressCtrl');
 const auth = require('../middlewares/auth');
 
 router.route('/')
-    .get(addressCtrl.getAddress)
-    .post(auth, addressCtrl.createAddress);
+    .get(auth, addressCtrl.getAddress)
 
-router.route('/:id')
-    .get(addressCtrl.getAddressById)
-    .put(auth, addressCtrl.updateAddress)
-    .delete(auth, addressCtrl.deleteAddress);
+router.get('/id/:id', auth, addressCtrl.getAddressById);
 
-// updateDefaultAddress
-router.route('/default')
-    .patch(auth, addressCtrl.updateDefaultAddress);
+router.get('/user-address', auth, addressCtrl.getAddressByUserId);
 
-router.route('/user')
-    .get(auth, addressCtrl.getAddressByUserId);
+router.post('/add', auth, addressCtrl.createAddress);
+
+router.patch('/default', auth, addressCtrl.updateDefaultAddress);
+
+router.patch('/update/:id', auth, addressCtrl.updateAddress);
+
+router.delete('/delete/:id', auth, addressCtrl.deleteAddress);
+
 
 module.exports = router;
