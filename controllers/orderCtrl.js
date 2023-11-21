@@ -32,6 +32,14 @@ const orderCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    getOrderByCode: async (req, res) => {
+        try {
+            const order = await Order.findOne({ code_order: req.params.code });
+            res.json(order);
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
     getOrdersByUser: async (req, res) => {
         try {
             const features = new APIFeatures(Order.find({ user_id: req.params.id }), req.query)

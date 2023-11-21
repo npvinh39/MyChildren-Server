@@ -7,6 +7,8 @@ router.get('/', auth, authAdmin, orderCtrl.getOrders);
 
 router.get('/:id', orderCtrl.getOrder);
 
+router.get('/code/:code', orderCtrl.getOrderByCode);
+
 router.get('/user/:id', orderCtrl.getOrdersByUser);
 
 router.post('/add/:id', auth, orderCtrl.createOrder);
