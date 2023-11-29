@@ -155,11 +155,11 @@ const productCtrl = {
     },
     updateProduct: async (req, res) => {
         try {
-            const { product_id, name, category_id, stock, price, price_discount, images, content, origin, made_in, brand, age_of_use } = req.body;
+            const { product_id, name, category_id, stock, price, price_discount, featured_product, images, content, origin, made_in, brand, age_of_use } = req.body;
 
             // Update product
             await Product.findOneAndUpdate({ _id: req.params.id }, {
-                product_id, name, category_id, stock, price, price_discount, images, content
+                product_id, name, category_id, stock, price, price_discount, featured_product, images, content
             });
 
             // Update description

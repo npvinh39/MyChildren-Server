@@ -48,7 +48,7 @@ const categoryCtrl = {
             // only admin can create , delete and update category
             const { name, image, description } = req.body;
             const category = await Category.findOne({ name });
-            if (category) return res.status(400).json({ msg: "This category already exists." });
+            if (category) return res.status(401).json({ msg: "Tên danh mục đã tồn tại" });
 
             const newCategory = new Category({ name, image, description });
 
@@ -61,8 +61,8 @@ const categoryCtrl = {
     deleteCategory: async (req, res) => {
         try {
             const products = await Product.findOne({ category_id: req.params.id })
-            if (products) return res.status(400).json({
-                msg: "Please delete all products with a relationship."
+            if (products) return res.status(401).json({
+                msg: "Vui lòng xóa tất cả sản phẩm thuộc danh mục này trước khi xóa"
             })
 
             const category = await Category.findOne({ _id: req.params.id });
@@ -71,7 +71,7 @@ const categoryCtrl = {
             });
 
             await Category.findByIdAndDelete(req.params.id)
-            res.json({ msg: "Deleted a Category" })
+            res.json({ msg: "Xóa danh mục thành công" })
         } catch (err) {
             return res.status(500).json({ msg: err.message })
         }
