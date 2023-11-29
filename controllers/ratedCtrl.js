@@ -85,6 +85,16 @@ const ratedCtrl = {
         }
     },
 
+    getRatedLength: async (req, res) => {
+        try {
+            const rated = await Rated.find();
+            res.json({ length: rated.length });
+        }
+        catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
     createRated: async (req, res) => {
         try {
             const { product_id, rating, comment } = req.body;

@@ -177,6 +177,15 @@ const userCtrl = {
         }
     },
 
+    getUsersLength: async (req, res) => {
+        try {
+            const length = await User.countDocuments();
+            res.json({ length });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
     updateUser: async (req, res) => {
         try {
             const { last_name, first_name, email, phone } = req.body;

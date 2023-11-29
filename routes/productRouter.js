@@ -13,6 +13,8 @@ router.get('/category/:id', productCtrl.getProductByCategory);
 
 router.get('/description/:id', productCtrl.getDescriptionByProduct);
 
+router.get('/length/all', productCtrl.getProductsLength);
+
 router.post('/add', auth, authAdmin, productCtrl.createProduct);
 
 router.patch('/edit/:id', auth, authAdmin, productCtrl.updateProduct);

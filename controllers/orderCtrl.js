@@ -59,6 +59,15 @@ const orderCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    getOrdersLength: async (req, res, next) => {
+        try {
+            const orders = await Order.find();
+            res.json({ length: orders.length });
+        }
+        catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
     createOrder: async (req, res) => {
         try {
             // get id cart_id

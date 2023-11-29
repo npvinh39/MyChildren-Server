@@ -124,6 +124,14 @@ const productCtrl = {
             return res.status(500).json({ msg: err.message });
         }
     },
+    getProductsLength: async (req, res) => {
+        try {
+            const productsLength = await Product.countDocuments();
+            res.json({ length: productsLength });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
     createProduct: async (req, res) => {
         try {
             const { product_id, name, category_id, stock, price, images, content, origin, made_in, brand, age_of_use } = req.body;

@@ -13,6 +13,8 @@ router.get('/total-rating/:id', ratedCtrl.getTotalRatingByProduct);
 
 router.get('/user/:id', ratedCtrl.getRatedByUser);
 
+router.get('/length/all', auth, authAdmin, ratedCtrl.getRatedLength);
+
 router.post('/add', auth, ratedCtrl.createRated);
 
 router.patch('/edit/:id', auth, authAdmin, ratedCtrl.updateRated);

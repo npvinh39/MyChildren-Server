@@ -11,6 +11,8 @@ router.get('/code/:code', orderCtrl.getOrderByCode);
 
 router.get('/user/:id', orderCtrl.getOrdersByUser);
 
+router.get('/length/all', auth, authAdmin, orderCtrl.getOrdersLength);
+
 router.post('/add/:id', auth, orderCtrl.createOrder);
 
 router.patch('/edit/:id', auth, authAdmin, orderCtrl.updateOrder);
