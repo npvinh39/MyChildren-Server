@@ -7,6 +7,10 @@ router.post('/register', userCtrl.register);
 
 router.post('/login', userCtrl.login);
 
+router.post('/forgot_password', userCtrl.forgotPassword);
+
+router.post('/reset_password/:token', userCtrl.resetPassword);
+
 router.get('/logout', userCtrl.logout);
 
 router.get('/refresh_token', userCtrl.refreshToken);

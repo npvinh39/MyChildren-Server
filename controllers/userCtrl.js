@@ -4,6 +4,7 @@ const Address = require('../models/addressModel');
 const APIFeatures = require('../utils/apiFeatures');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 
 const userCtrl = {
     register: async (req, res) => {
@@ -251,6 +252,79 @@ const userCtrl = {
 
             // Return message indicating that the password has been changed
             res.json({ msg: "Password successfully changed!" });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    forgotPassword: async (req, res) => {
+        try {
+            const { email } = req.body;
+            const user = await User.findOne({ email });
+            if (!user) return res.status(404).json({ msg: "User does not exist." });
+
+            // Create reset token that expires in 10 minutes
+            const resetToken = jwt.sign({ id: user._id }, process.env.RESET_TOKEN_SECRET_KEY, { expiresIn: '5m' });
+            const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+            // Send reset password email
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USERNAME,
+                    pass: process.env.EMAIL_PASSWORD
+                }
+            });
+
+            const mailOptions = {
+                from: process.env.EMAIL_USERNAME,
+                to: email,
+                subject: 'Reset your password',
+                html: `
+                    <h2>Please click on the link below to reset your password</h2>
+                    <a href="${resetUrl}">Click here</a>
+                    <p>(the password reset link will be valid for 5 minutes)</p>
+                    <hr />
+                    <p>Please ignore this email if you did not request to reset your password.</p>
+                `
+            };
+
+            transporter.sendMail(mailOptions, (err, info) => {
+                if (err) return res.status(500).json({ msg: err.message });
+
+                // res.json({ msg: "Reset password email has been sent." });
+                res.json({ msg: "Đã gửi email đặt lại mật khẩu." });
+            });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    resetPassword: async (req, res) => {
+        try {
+            const { newPassword } = req.body;
+            const resetToken = req.params.token;
+
+            // Check if reset token is valid
+            jwt.verify(resetToken, process.env.RESET_TOKEN_SECRET_KEY, async (err, user) => {
+                if (err) return res.status(401).json({ msg: "Mã bảo mật không hợp lệ hoặc đã hết hạn." }); // Invalid or expired token.
+
+                // Check if new password is at least 8 characters long
+                if (newPassword.length < 8)
+                    return res.status(401).json({ msg: "Password is at least 8 characters long." });
+
+                // Check if new password meets additional criteria
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/;
+                if (!passwordRegex.test(newPassword))
+                    return res.status(401).json({ msg: "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character." });
+
+                // Encrypt new password and update user's password
+                const passwordHash = await bcrypt.hash(newPassword, 10);
+                await User.findByIdAndUpdate(user.id, { password: passwordHash });
+
+                // Return message indicating that the password has been changed
+                res.json({ msg: "Password successfully changed!" });
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
