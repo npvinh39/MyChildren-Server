@@ -55,8 +55,62 @@ const userCtrl = {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7d
             });
 
+            // send mail active account
+            const activeToken = jwt.sign({ id: newUser._id }, process.env.ACTIVE_TOKEN_SECRET_KEY, { expiresIn: '5m' });
+            const activeUrl = `${process.env.CLIENT_URL}/active-account/${activeToken}`;
+
+            // Send active account email
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USERNAME,
+                    pass: process.env.EMAIL_PASSWORD
+                }
+            });
+
+            const mailOptions = {
+                from: process.env.EMAIL_USERNAME,
+                to: email,
+                subject: 'Active your account',
+                html: `
+                    <h2>Please click on the link below to active your account</h2>
+                    <a href="${activeUrl}">Click here</a>
+                    <p>(the active link will be valid for 5 minutes)</p>
+                    <hr />
+                    <p>Please ignore this email if you did not register an account.</p>
+                `
+            };
+
+            transporter.sendMail(mailOptions, (err, info) => {
+                if (err) return res.status(500).json({ msg: err.message });
+
+                // res.json({ msg: "Reset password email has been sent." });
+                // res.json({ msg: "Đã gửi email kích hoạt tài khoản." });
+            });
+
             // Return access token and new user's information
             res.json({ accessToken, refreshToken, newUser });
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
+    activeAccount: async (req, res) => {
+        try {
+            const activeToken = req.params.token;
+
+            // Check if active token is valid
+            jwt.verify(activeToken, process.env.ACTIVE_TOKEN_SECRET_KEY, async (err, user) => {
+                if (err) return res.status(401).json({ msg: "Mã bảo mật không hợp lệ hoặc đã hết hạn." }); // Invalid or expired token.
+
+                // Update user's status
+                User.updateOne({ _id: user.id }, { status: "activated" }, (err, result) => {
+                    if (err) return res.status(500).json({ msg: err.message });
+
+                    // Return message indicating that the account has been activated
+                    res.json({ msg: "Tài khoản đã được kích hoạt!" });
+                });
+            });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -74,6 +128,12 @@ const userCtrl = {
             // Check if password is correct
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) return res.status(401).json({ msg: "Mật khẩu không đúng" });
+
+            // Check if user is blocked
+            if (user.status === "blocked") return res.status(401).json({ msg: "Tài khoản đã bị khóa" });
+
+            // Check if user is activated
+            if (user.status !== "activated") return res.status(401).json({ msg: "Tài khoản chưa được kích hoạt" });
 
             // Create access token and refresh token
             const accessToken = createAccessToken({ id: user._id });
@@ -171,8 +231,20 @@ const userCtrl = {
 
     getUser: async (req, res) => {
         try {
-            const user = await User.findById(req.params.id);
-            res.json(user);
+            const id = req.params.id;
+            const user = await User.findById(id);
+            // -password
+            const { password, ...info } = user._doc;
+            // get cart information
+            const cart = await Cart.findOne({ user_id: id });
+            // get address array information from address_id array
+            const address = await Address.find({ _id: { $in: info.address_id } });
+            // sort addresses by adress_id array in user (default address is in 0 index array)
+            address.sort((a, b) => {
+                return info.address_id.indexOf(a._id) - info.address_id.indexOf(b._id);
+            });
+
+            res.json({ ...info, cart, address });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -189,9 +261,10 @@ const userCtrl = {
 
     updateUser: async (req, res) => {
         try {
-            const { last_name, first_name, email, phone } = req.body;
-            await User.findByIdAndUpdate(req.params.id, { last_name, first_name, email, phone });
-            res.json({ msg: "User successfully updated!", user: req.body });
+            const { last_name, first_name, email, phone, status } = req.body;
+            await User.findByIdAndUpdate(req.params.id, { last_name, first_name, email, phone, status });
+            const user = await User.findByIdAndUpdate(req.params.id);
+            res.json({ msg: "User successfully updated!", user });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

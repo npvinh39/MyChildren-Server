@@ -61,6 +61,9 @@ const adminCtrl = {
             const isMatch = await bcrypt.compare(password, admin.password);
             if (!isMatch) return res.status(401).json({ msg: "Incorrect password." });
 
+            // Check if admin is activated
+            if (admin.status !== "activated") return res.status(401).json({ msg: "Admin is not activated." });
+
             // Create access token and refresh token
             const accessToken = createAccessToken({ id: admin._id });
             const refreshToken = createRefreshToken({ id: admin._id });
@@ -152,7 +155,7 @@ const adminCtrl = {
 
     updateAdmin: async (req, res) => {
         try {
-            const { last_name, first_name, email, phone } = req.body;
+            const { last_name, first_name, email, phone, status, role } = req.body;
 
             // Check if admin exists
             const admin = await Admin.findById(req.params.id);
@@ -165,11 +168,14 @@ const adminCtrl = {
 
             // Update admin's information
             await Admin.findByIdAndUpdate(req.user.id, {
-                last_name, first_name, email, phone
+                last_name, first_name, email, phone, status, role
             });
 
+            // Get admin's updated information
+            const updatedAdmin = await Admin.findById(req.params.id).select('-password');
+
             // Return success message
-            res.json({ msg: "Update Success!" });
+            res.json({ msg: "Update Success!", data: updatedAdmin });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -177,9 +183,10 @@ const adminCtrl = {
 
     deleteAdmin: async (req, res) => {
         try {
-            const admin = await Admin.findByIdAndDelete(req.params.id);
+            const id = req.params.id;
+            const admin = await Admin.findByIdAndDelete(id);
             if (!admin) return res.status(404).json({ msg: "Admin does not exist." });
-            res.json({ msg: "Deleted Success!" });
+            res.json({ msg: "Deleted Success!", id });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -232,6 +239,35 @@ const adminCtrl = {
 
             // Update admin's password
             await Admin.findByIdAndUpdate(req.user.id, { password: passwordHash });
+
+            // Return success message
+            res.json({ msg: "Password successfully changed!" });
+        } catch (err) {
+            return res.status(500).json({ msgError: err.message });
+        }
+    },
+    updatePassword: async (req, res) => {
+        try {
+            const { password } = req.body;
+
+            const ad = await Admin.findById(req.user.id);
+
+            // Check if admin exists
+            const admin = await Admin.findById(req.params.id);
+            if (!admin) return res.status(404).json({ msg: "Admin does not exist." });
+
+            if (ad.role !== 'admin') return res.status(401).json({ msg: "You are not allowed to change password of this admin." });
+
+            // Check if new password meets additional criteria
+            const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\S+$).{8,}$/;
+            if (!passwordRegex.test(password))
+                return res.status(401).json({ msg: "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character." });
+
+            // Encrypt new password
+            const passwordHash = await bcrypt.hash(password, 10);
+
+            // Update admin's password
+            await Admin.findByIdAndUpdate(req.params.id, { password: passwordHash });
 
             // Return success message
             res.json({ msg: "Password successfully changed!" });

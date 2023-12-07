@@ -87,13 +87,13 @@ const orderCtrl = {
             // check discount membership with spending
             let discount = 0;
             if (user_id !== "visitor" && user) {
-                if (user.spending >= 1000000) {
+                if (user.spending >= 10000000) {
                     discount = 0.1;
                 }
-                else if (user.spending >= 500000) {
+                else if (user.spending >= 5000000) {
                     discount = 0.05;
                 }
-                else if (user.spending >= 100000) {
+                else if (user.spending >= 2000000) {
                     discount = 0.02;
                 }
                 else {
@@ -157,15 +157,18 @@ const orderCtrl = {
     },
     updateOrder: async (req, res) => {
         try {
+            const id = req.params.id;
             const { user_id, products, customer, phone, email, discount, shipping, total_amount, final_total, payment_status, payment_method, status, delivery_method, address } = req.body;
 
             // Update order
-            await Order.findOneAndUpdate({ _id: req.params.id }, {
+            await Order.findOneAndUpdate({ _id: id }, {
                 user_id, products, customer, phone, email, discount, shipping, total_amount, final_total, payment_status, payment_method, status, delivery_method, address
             });
 
+            const order = await Order.findById(id);
+
             // Return success message
-            res.json({ msg: "Updated order Successfully!" });
+            res.json({ msg: "Updated order Successfully!", data: order });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
@@ -173,8 +176,9 @@ const orderCtrl = {
 
     deleteOrder: async (req, res) => {
         try {
-            await Order.findByIdAndDelete(req.params.id);
-            res.json({ msg: "Deleted order Successfully!" });
+            const id = req.params.id;
+            await Order.findByIdAndDelete(id);
+            res.json({ msg: "Deleted order Successfully!", data: { id } });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }

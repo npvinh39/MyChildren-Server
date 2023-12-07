@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    status: {
+        type: String,
+        required: true,
+        default: "inactive" // inactive, activated, blocked
+    },
     spending: {
         type: Number,
         required: true,

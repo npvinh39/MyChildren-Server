@@ -25,6 +25,8 @@ router.patch('/update', auth, authAdmin, adminCtrl.updateProfile);
 
 router.patch('/change_password', auth, authAdmin, adminCtrl.changePassword);
 
+router.patch('/update_password/:id', auth, authAdmin, adminCtrl.updatePassword);
+
 
 
 
