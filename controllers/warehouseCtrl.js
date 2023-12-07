@@ -25,6 +25,29 @@ const warehouseCtrl = {
         }
     },
 
+    getWarehouse: async (req, res) => {
+        try {
+            const id = req.params.id;
+
+            const warehouse = await Warehouse.findById(id);
+
+            // copy warehouse to warehouseFinal
+            let warehouseFinal = JSON.parse(JSON.stringify(warehouse));
+
+            // Create product_name from product ID in warehouse entry.
+            for (let i = 0; i < warehouse.products.length; i++) {
+                // get only the product name from the product ID in warehouse entry
+                const product = await Product.findById(warehouse.products[i].product_id, 'name');
+                // create product name to warehouseFinal
+                warehouseFinal.products[i].product_name = product.name;
+            }
+
+            res.json(warehouseFinal);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    },
+
     updateProductStockIn: async (req, res) => {
         try {
             const { products } = req.body;

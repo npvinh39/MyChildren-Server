@@ -10,5 +10,7 @@ router.post('/out', auth, authAdmin, warehouseCtrl.updateProductStockOut);
 
 router.get('/', auth, authAdmin, warehouseCtrl.getWarehouseEntries);
 
+router.get('/get/:id', auth, authAdmin, warehouseCtrl.getWarehouse);
+
 
 module.exports = router;
