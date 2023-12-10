@@ -22,6 +22,30 @@ const revenueCtrl = {
             return res.status(500).json({ error: error.message });
         }
     },
+    // For example: from 2023-11-01 to 2023-11-30
+    getRevenueByTime: async (req, res) => {
+        try {
+            const { from, to } = req.body;
+            const features = new APIFeatures(Revenue.find({ date: { $gte: from, $lte: to } }), req.query)
+                .filter()
+                .sort()
+                .limitFields()
+                .paginate();
+
+            const revenues = await features.query;
+
+            res.json({
+                status: 'success',
+                result: revenues.length,
+                totalPages: Math.ceil(await Revenue.countDocuments().exec() / req.query.limit),
+                revenue: revenues
+            });
+        }
+        catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    },
+
     getRevenueByDate: async (req, res) => {
         try {
             const revenues = await Revenue.find({ date: req.params.date });
@@ -34,7 +58,8 @@ const revenueCtrl = {
     getRevenueByMonth: async (req, res) => {
         try {
             const revenues = await Revenue.find({ date: { $regex: req.params.month } });
-
+            // const month = parseInt(req.params.month);
+            // const revenues = await Revenue.find({ date: { $gte: new Date(month, 0), $lt: new Date(month + 1, 0) } });
             res.json(revenues);
         } catch (err) {
             return res.status(500).json({ msg: err.message });
