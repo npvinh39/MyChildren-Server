@@ -14,6 +14,8 @@ const cartCtrl = {
         try {
             const { products } = req.body;
 
+            console.log(products);
+
             // If the user is not logged in
             if (!req.user.id) return res.status(400).json({ msg: "Please login to continue!" });
 
@@ -68,6 +70,12 @@ const cartCtrl = {
 
             // If the user is not logged in
             if (!req.user.id) return res.status(400).json({ msg: "Please login to continue!" });
+
+            // check quantity > stock product
+            const product = await Product.findById(products[0].product_id);
+            if (products[0].quantity > product.stock) {
+                return res.status(401).json({ msg: "Số lượng lớn hơn hàng có sẵn!" }); //Quantity is greater than stock!
+            }
 
             // Get the user's cart
             let cart = await Cart.findOne({ user_id: req.user.id });

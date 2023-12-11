@@ -35,7 +35,6 @@ const productCtrl = {
                 .limitFields()
                 .paginate();
 
-
             const products = await features.query;
 
             const result = await Promise.all(products.map(async product => {
@@ -44,8 +43,7 @@ const productCtrl = {
                     ...product.toObject(),
                     description: description.toObject()
                 };
-            })
-            );
+            }));
 
             res.json({
                 status: 'success',
@@ -115,7 +113,7 @@ const productCtrl = {
                 res.json({
                     status: 'success',
                     results: products.length,
-                    totalPages: Math.ceil(await Product.countDocuments().exec() / req.query.limit),
+                    totalPages: Math.ceil(await Product.countDocuments({ category_id: req.params.id }).exec() / req.query.limit),
                     products
                 });
             }

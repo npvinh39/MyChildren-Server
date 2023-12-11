@@ -26,11 +26,22 @@ const revenueCtrl = {
     getRevenueByTime: async (req, res) => {
         try {
             const { from, to } = req.body;
-            const features = new APIFeatures(Revenue.find({ date: { $gte: from, $lte: to } }), req.query)
-                .filter()
-                .sort()
-                .limitFields()
-                .paginate();
+
+            let features;
+            if (from && to) {
+                features = new APIFeatures(Revenue.find({ date: { $gte: from, $lte: to } }), req.query)
+                    .filter()
+                    .sort()
+                    .limitFields()
+                    .paginate();
+            }
+            else {
+                features = new APIFeatures(Revenue.find(), req.query)
+                    .filter()
+                    .sort()
+                    .limitFields()
+                    .paginate();
+            }
 
             const revenues = await features.query;
 

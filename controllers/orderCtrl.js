@@ -3,6 +3,7 @@ const Product = require('../models/productModel');
 const User = require('../models/userModel');
 const Cart = require('../models/cartModel');
 const APIFeatures = require('../utils/apiFeatures');
+const nodemailer = require('nodemailer');
 
 const orderCtrl = {
     getOrders: async (req, res) => {
@@ -52,7 +53,7 @@ const orderCtrl = {
             res.json({
                 status: 'success',
                 result: orders.length,
-                totalPages: Math.ceil(await Order.countDocuments().exec() / req.query.limit),
+                totalPages: Math.ceil(await Order.countDocuments({ user_id: req.params.id }).exec() / req.query.limit),
                 orders: orders
             });
         } catch (err) {
@@ -149,16 +150,103 @@ const orderCtrl = {
                 });
             }
 
+            // send email
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USERNAME,
+                    pass: process.env.EMAIL_PASSWORD
+                }
+            });
+
+            const orderUrl = `${process.env.CLIENT_URL}/order/${code_order}`
+
+            const mailOptions = {
+                from: process.env.EMAIL_USERNAME,
+                to: email,
+                subject: 'Order confirmation',
+                html: `<h1>Thank you for your order!</h1>
+                <p>Hi ${customer},</p>
+                <p>We're getting your order ready to be shipped. We will notify you when it has been sent.</p>
+                <p>Your order number is <strong>${code_order}</strong>.</p>
+                <p>Check the status of your order <a href="${orderUrl}">here</a>.</p>
+                <p>Thanks for shopping with us.</p>`
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                }
+                else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+
             // Return success message
             res.json({ msg: "Created order Successfully!" });
         } catch (err) {
             return res.status(500).json({ msg: err.message });
         }
     },
+
+    cancelOrder: async (req, res) => {
+        try {
+            const id = req.params.id;
+            const order = await Order.findById(id);
+
+            // check if the order is "pending"
+            if (order.status === "pending") {
+                // update order status
+                await Order.findOneAndUpdate({ _id: id }, {
+                    status: "cancelled"
+                });
+
+                // update product stock and sold
+                for (let i = 0; i < order.products.length; i++) {
+                    const product = await Product.findById(order.products[i].product_id);
+                    await Product.findOneAndUpdate({ _id: order.products[i].product_id }, {
+                        stock: product.stock + order.products[i].quantity,
+                        sold: product.sold - order.products[i].quantity
+                    });
+                }
+
+                // update user spending
+                if (order.user_id !== "visitor") {
+                    const user = await User.findById(order.user_id);
+                    await User.findOneAndUpdate({ _id: order.user_id }, {
+                        spending: user.spending - order.final_total
+                    });
+                }
+
+                // Return success message
+                res.json({ msg: "Cancelled order Successfully!" });
+            }
+            else {
+                return res.status(400).json({ msg: "You can only cancel the order if it is 'Chờ xác nhận'!" });
+            }
+        } catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    },
+
     updateOrder: async (req, res) => {
         try {
             const id = req.params.id;
             const { user_id, products, customer, phone, email, discount, shipping, total_amount, final_total, payment_status, payment_method, status, delivery_method, address } = req.body;
+
+            // if status is "cancelled" then update product stock and sold
+            if (status === "cancelled") {
+                const order = await Order.findById(id);
+                if (order.status !== "cancelled") {
+                    for (let i = 0; i < order.products.length; i++) {
+                        const product = await Product.findById(order.products[i].product_id);
+                        await Product.findOneAndUpdate({ _id: order.products[i].product_id }, {
+                            stock: product.stock + order.products[i].quantity,
+                            sold: product.sold - order.products[i].quantity
+                        });
+                    }
+                }
+            }
 
             // Update order
             await Order.findOneAndUpdate({ _id: id }, {

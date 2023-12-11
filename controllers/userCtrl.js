@@ -56,7 +56,7 @@ const userCtrl = {
             });
 
             // send mail active account
-            const activeToken = jwt.sign({ id: newUser._id }, process.env.ACTIVE_TOKEN_SECRET_KEY, { expiresIn: '5m' });
+            const activeToken = jwt.sign({ id: newUser._id }, process.env.RESET_TOKEN_SECRET_KEY, { expiresIn: '1h' });
             const activeUrl = `${process.env.CLIENT_URL}/active-account/${activeToken}`;
 
             // Send active account email
@@ -75,14 +75,14 @@ const userCtrl = {
                 html: `
                     <h2>Please click on the link below to active your account</h2>
                     <a href="${activeUrl}">Click here</a>
-                    <p>(the active link will be valid for 5 minutes)</p>
+                    <p>(the active link will be valid for 1 hours)</p>
                     <hr />
                     <p>Please ignore this email if you did not register an account.</p>
                 `
             };
 
             transporter.sendMail(mailOptions, (err, info) => {
-                if (err) return res.status(500).json({ msg: err.message });
+                if (err) return res.status(500).json({ msgEmail: err.message });
 
                 // res.json({ msg: "Reset password email has been sent." });
                 // res.json({ msg: "Đã gửi email kích hoạt tài khoản." });
@@ -133,7 +133,7 @@ const userCtrl = {
             if (user.status === "blocked") return res.status(401).json({ msg: "Tài khoản đã bị khóa" });
 
             // Check if user is activated
-            if (user.status !== "activated") return res.status(401).json({ msg: "Tài khoản chưa được kích hoạt" });
+            // if (user.status !== "activated") return res.status(401).json({ msg: "Tài khoản chưa được xác minh" });
 
             // Create access token and refresh token
             const accessToken = createAccessToken({ id: user._id });

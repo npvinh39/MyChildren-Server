@@ -52,7 +52,7 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        default: "Chờ xác nhận"
+        default: "pending", // pending, processing, shipping, delivered, cancelled
     },
     delivery_method: {
         type: String,

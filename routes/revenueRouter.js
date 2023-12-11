@@ -5,7 +5,7 @@ const authAdmin = require('../middlewares/authAdmin');
 
 router.get('/', auth, authAdmin, revenueCtrl.getRevenue);
 
-router.get('/time', auth, authAdmin, revenueCtrl.getRevenueByTime);
+router.post('/time', auth, authAdmin, revenueCtrl.getRevenueByTime);
 
 router.get('/date/:date', auth, authAdmin, revenueCtrl.getRevenueByDate);
 
